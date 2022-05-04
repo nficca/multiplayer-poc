@@ -1,5 +1,4 @@
 import express from "express";
-import { createProxyMiddleware } from "http-proxy-middleware";
 import httpProxy from "http-proxy";
 
 const port = process.env.PORT
@@ -26,7 +25,10 @@ const server = app.listen(port, () => {
   console.log(`proxy server started on ${port}`);
 })
 
-server.on('upgrade', function (req, socket, head) {
-  console.log("proxying upgrade request", req.url);
+server.on('upgrade', (req, socket, head) => {
+  console.log('req', req);
+  console.log('socket', socket);
+  console.log('head', head);
+  
   proxy.ws(req, socket, head);
 });

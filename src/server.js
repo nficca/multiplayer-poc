@@ -8,10 +8,14 @@ if (!port) {
 
 const wss = new WebSocketServer({ port });
 
-wss.on('connection', function connection(ws) {
+wss.on('connection', (ws) => {
   console.log('connection', ws)
+
+  ws.on('message', (data) => {
+    console.log('received: %s', data);
+  });
 });
 
-wss.on('close', function close() {
+wss.on('close', () => {
   console.log('close')
 });
