@@ -12,10 +12,13 @@ if (!port) {
 const wss = new WebSocketServer({ noServer: true });
 const app = express();
 
+// Setup http server
 const server = app.listen(port, () => {
   console.log(`started server on port ${port}`);
 })
 
+
+// Handle websocket upgrade request with web socket server
 server.on('upgrade', (req, socket, head) => {
   wss.handleUpgrade(req, socket, head, ws => {
     const auth = req.headers.authorization;

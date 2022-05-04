@@ -12,29 +12,31 @@ if (!multiplayerWs) {
   throw new Error('Must pass MULTIPLAYER_WS');
 }
 
-const socket = new WebSocket(multiplayerWs, {headers: {
-  authorization: 'Bearer cloudscript_token'
-}});
-
-socket.on('open', () => {
-  console.log('connected');
-});
-
-const app = express();
-
+// Simplified cloudscript definitions
 const cloudscripts = {
   chat: ({ message }) => {
-    console.log(`sending multiplayer message: ${message}`)
     socket.send(message);
   }
 }
 
+// Initialize socket connection to multiplayer service
+const socket = new WebSocket(multiplayerWs, {headers: {
+  authorization: 'Bearer cloudscript_token'
+}});
+socket.on('open', () => {
+  console.log('connected to multiplayer service');
+});
+
+// Initialize express app
+const app = express();
+
+// Handle cloudscript execute request
 app.get('/execute/:script', (req, res) => {
   const script = req.params.script;
   const params = req.query;
-  console.log(`recieved execture request for script ${script} with params ${params}`)
   
   if (cloudscripts[script]) {
+    console.log(`Executing script '${script}'`, params)
     const result = cloudscripts[script](params);
     res.status(200).send(result);
   } else {
