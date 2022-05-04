@@ -1,5 +1,7 @@
 import {WebSocketServer} from 'ws';
 import express from "express";
+import { setupSocket as setupClientSocket } from './clientSocket.js';
+import { setupSocket as setupCloudscriptSocket } from './cloudscriptSocket.js';
 
 const port = process.env.PORT;
 
@@ -19,25 +21,18 @@ server.on('upgrade', (req, socket, head) => {
     const auth = req.headers.authorization;
     const token = auth.split(' ')[1];
 
+    // Handle client WS connection
     if (token === 'client_token') {
-      ws.type = 'client';
-
-      ws.on('message', (data) => {
-        console.error('Do not send data from client')
-        ws.close();
-      })
-    } else if (token === 'cloudscript_token') {
-      ws.type = 'cloudscript';
-
-      ws.on('message', (data) => {
-        console.log(`recieved cloudscript message ${data}`);
-        wss.clients.forEach(ws => {
-          if (ws.type === 'client') {
-            ws.send(data);
-          }
-        })
-      })
-    } else {
+      setupClientSocket(ws, wss);
+    } 
+    
+    // Handle Cloudscript WS connection
+    else if (token === 'cloudscript_token') {
+      setupCloudscriptSocket(ws, wss);
+    } 
+    
+    // Unexpected WS request, deny
+    else {
       socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
       socket.destroy();
     }
