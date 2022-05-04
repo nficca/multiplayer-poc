@@ -1,18 +1,30 @@
 import WebSocket from 'ws';
+import fetch from 'node-fetch';
 
-const proxyAddress = process.env.PROXY_ADDRESS;
+const multiplayerWs = process.env.MULTIPLAYER_WS;
+const cloudscriptsHost = process.env.CLOUDSCRIPTS_HOST;
 
-if (!proxyAddress) {
-  throw new Error('Must pass PROXY');
+if (!multiplayerWs) {
+  throw new Error('Must pass MULTIPLAYER_WS');
 }
 
-const socket = new WebSocket(proxyAddress);
+if (!cloudscriptsHost) {
+  throw new Error('Must pass CLOUDSCRIPTS_HOST');
+}
+
+setInterval(() => {
+  console.log('requesting cloudscripts/execute/chat');
+  fetch(`${cloudscriptsHost}/execute/chat?message=Hello`);
+}, 5000);
+
+const socket = new WebSocket(multiplayerWs, {headers: {
+  authorization: 'Bearer client_token'
+}});
 
 socket.on('open', () => {
-  console.log('opened');
-  socket.send('hello');
+  console.log('connected');
 });
 
-socket.on('message', (data, flags) => {
-  console.log('recieved message', data, flags);
+socket.on('message', (data) => {
+  console.log('recieved multiplayer message: ', data);
 });
