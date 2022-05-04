@@ -14,8 +14,8 @@ if (!multiplayerWs) {
 
 // Simplified cloudscript definitions
 const cloudscripts = {
-  chat: ({ message }) => {
-    socket.send(message);
+  chat: ({ id, message }) => {
+    socket.send(JSON.stringify({ event: 'chat', id, message }));
   }
 }
 

@@ -2,6 +2,7 @@ import {WebSocketServer} from 'ws';
 import express from "express";
 import { setupSocket as setupClientSocket } from './clientSocket.js';
 import { setupSocket as setupCloudscriptSocket } from './cloudscriptSocket.js';
+import { v4 as uuidv4 } from 'uuid';
 
 const port = process.env.PORT;
 
@@ -24,6 +25,9 @@ server.on('upgrade', (req, socket, head) => {
     const auth = req.headers.authorization;
     const token = auth.split(' ')[1];
 
+    // Give socket a unique id
+    ws.id = uuidv4();
+
     // Handle client WS connection
     if (token === 'client_token') {
       setupClientSocket(ws, wss);
@@ -32,13 +36,15 @@ server.on('upgrade', (req, socket, head) => {
     // Handle Cloudscript WS connection
     else if (token === 'cloudscript_token') {
       setupCloudscriptSocket(ws, wss);
-    } 
+    }
     
     // Unexpected WS request, deny
     else {
       socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
       socket.destroy();
     }
+
+    ws.send(JSON.stringify({id: ws.id}));
   })
 });
 
